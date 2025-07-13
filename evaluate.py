@@ -2,6 +2,11 @@ import gym
 import torch
 import torch.nn as nn
 import time
+import numpy as np
+
+# Fix for numpy compatibility with newer versions
+if not hasattr(np, 'bool8'):
+    np.bool8 = np.bool_
 
 class QNetwork(nn.Module):
     def __init__(self, input_dim, output_dim):
@@ -34,7 +39,9 @@ while not done:
     time.sleep(0.02)  # Optional slow-down
     state_tensor = torch.FloatTensor(state).unsqueeze(0)
     action = model(state_tensor).argmax().item()
-    state, reward, done, _, _ = env.step(action)
+    next_state, reward, terminated, truncated, _ = env.step(action)
+    done = terminated or truncated
+    state = next_state
     total_reward += reward
 
 env.close()
